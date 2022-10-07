@@ -1,0 +1,76 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+
+const headers = { "Content-Type": "application/json" };
+const slug = Astro.params.slug;
+export async function getStaticPaths(){
+	const headers = { "Content-Type": "application/json" };
+	const postData = await fetch(import.meta.env.WP_URL, {
+  method: "post",
+  headers,
+  body: JSON.stringify({
+    query: `{
+			posts {
+					nodes {
+					slug 
+				}
+  		}
+		}`,
+  }), 
+}).then(data => data.json())
+
+
+	return postData?.data?.posts?.nodes.map(node => {
+		return {
+			params: {
+				slug: node.slug
+			}
+		}
+	})
+}
+const postData = await fetch(import.meta.env.WP_URL, {
+  method: "post",
+  headers, 
+  body: JSON.stringify({
+    query: `{
+			post(id: "${slug}", idType: SLUG) {
+    title
+    date
+    id
+    slug
+    uri
+    content
+  }
+		}`,
+  }), 
+}).then(data => data.json())
+
+const post = postData?.data?.post;
+---
+
+<Layout title="Welcome to Astro.">
+  <main>
+    <h1 set:html={post.title}></h1>
+		<time>{new Date(post.date).toLocaleString()}</time>
+		<div set:html={post.content}></div>
+
+
+  </main>
+</Layout>
+
+<style>
+  main {
+    margin: auto;
+    padding: 1.5rem;
+    max-width: 60ch;
+  }
+  h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0;
+  }
+  :global(img) {
+		max-width: 100%;
+	}
+</style>

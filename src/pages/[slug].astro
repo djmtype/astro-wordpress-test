@@ -1,6 +1,8 @@
 ---
-import Layout from "../layouts/Layout.astro";
 
+import Layout from "../layouts/Layout.astro";
+import { Picture } from '@astrojs/image/components';
+// import { Picture } from "astro-imagetools/components";
 
 const headers = { "Content-Type": "application/json" };
 const slug = Astro.params.slug;
@@ -30,7 +32,7 @@ export async function getStaticPaths(){
 	})
 }
 const postData = await fetch(import.meta.env.WP_URL, {
-  method: "post",
+  method: "POST",
   headers, 
   body: JSON.stringify({
     query: `{
@@ -41,6 +43,12 @@ const postData = await fetch(import.meta.env.WP_URL, {
     slug
     uri
     content
+    featuredImage {
+      node {
+        altText
+        mediaItemUrl
+      }
+    }
   }
 		}`,
   }), 
@@ -51,6 +59,8 @@ const post = postData?.data?.post;
 
 <Layout title="Welcome to Astro.">
   <main>
+    <!-- <img src={post.featuredImage.node.mediaItemUrl} alt={post.altText} width="1200" /> -->
+    <Picture src={post.featuredImage.node.mediaItemUrl} alt={post.featuredImage.node.altText} aspectRatio="16:9" widths={[400, 800, 1200]} formats={["webp"]} />
     <h1 set:html={post.title}></h1>
 		<time>{new Date(post.date).toLocaleString()}</time>
 		<div set:html={post.content}></div>
